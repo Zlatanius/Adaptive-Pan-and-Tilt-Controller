@@ -1,3 +1,6 @@
 *.png
 *.jpg
 *.mp4
+pyrightconfig.json
+out/*
+**/.DS_Store

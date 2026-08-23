@@ -17,7 +17,7 @@ Run:
     python3 simulate.py                         # macOS / has a display
 """
 import os
-os.environ.setdefault("MUJOCO_GL", "osmesa")  # headless rendering; unset/cgl on macOS
+# os.environ.setdefault("MUJOCO_GL", "osmesa")  # headless rendering; unset/cgl on macOS
 
 import sys
 import numpy as np
@@ -27,7 +27,12 @@ import cv2
 
 # Vendored IEBCS source (see external/IEBCS_src, external/IEBCS_data)
 sys.path.append(os.path.join(os.path.dirname(__file__), "external", "IEBCS", "src"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "external", "SpeckEgoMotion"))
+
 from dvs_sensor import DvsSensor  # noqa: E402
+
+from OMS_helpers import *
+from attention_simple_helpers import *
 
 # ---------------------------------------------------------------- settings
 XML_PATH = "pan_tilt.xml"
