@@ -18,7 +18,7 @@
     <geom name="target3" type="cylinder" pos="1.98 0.0 0.4" size="0.12 0.12" rgba="0.1 0.3 1 1"/>
 
     <!-- pan-tilt rig -->
-    <body name="pan_link" pos="0 0 1">
+    <body name="pan_link" pos="-2 0 1">
       <joint name="pan_joint" type="hinge" axis="0 0 1" range="-90 90"/>
       <geom type="cylinder" size="0.03 0.05" rgba="0.3 0.3 0.3 1"/>
 

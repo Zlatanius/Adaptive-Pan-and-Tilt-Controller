@@ -1,0 +1,296 @@
+<mujoco model="desk_scene">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <material name="BB_023_001" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_002" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_003" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_004" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_005" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_006" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_007" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_008" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_009" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_010" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_011" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_012" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_013" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_014" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_015" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_016" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_017" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_018" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_019" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_020" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_021" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_022" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_023" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_024" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_025" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_026" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_027" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_028" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_029" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_030" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_031" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_032" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_033" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_034" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_035" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_036" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_037" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_038" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_039" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_040" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_041" specular="0.370968" shininess="0.39568164100000003" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_042" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_043" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_044" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_045" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_046" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_047" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_048" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_049" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_050" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_051" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_052" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_053" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_054" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_055" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_056" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_057" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_058" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_059" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_060" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_061" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_062" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_063" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_064" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_065" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_066" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_067" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_068" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_069" specular="0.5" shininess="0.25" rgba="0.800000 0.800000 0.800000 1.000000"/>
+    <material name="BB_023_070" specular="0.5" shininess="0.84027771" rgba="0.465007 0.743111 0.527480 1.000000"/>
+    <mesh file="desk_scene_0.obj"/>
+    <mesh file="desk_scene_1.obj"/>
+    <mesh file="desk_scene_2.obj"/>
+    <mesh file="desk_scene_3.obj"/>
+    <mesh file="desk_scene_4.obj"/>
+    <mesh file="desk_scene_5.obj"/>
+    <mesh file="desk_scene_6.obj"/>
+    <mesh file="desk_scene_7.obj"/>
+    <mesh file="desk_scene_8.obj"/>
+    <mesh file="desk_scene_9.obj"/>
+    <mesh file="desk_scene_10.obj"/>
+    <mesh file="desk_scene_11.obj"/>
+    <mesh file="desk_scene_12.obj"/>
+    <mesh file="desk_scene_13.obj"/>
+    <mesh file="desk_scene_14.obj"/>
+    <mesh file="desk_scene_15.obj"/>
+    <mesh file="desk_scene_16.obj"/>
+    <mesh file="desk_scene_17.obj"/>
+    <mesh file="desk_scene_18.obj"/>
+    <mesh file="desk_scene_19.obj"/>
+    <mesh file="desk_scene_20.obj"/>
+    <mesh file="desk_scene_21.obj"/>
+    <mesh file="desk_scene_22.obj"/>
+    <mesh file="desk_scene_23.obj"/>
+    <mesh file="desk_scene_24.obj"/>
+    <mesh file="desk_scene_25.obj"/>
+    <mesh file="desk_scene_26.obj"/>
+    <mesh file="desk_scene_27.obj"/>
+    <mesh file="desk_scene_28.obj"/>
+    <mesh file="desk_scene_29.obj"/>
+    <mesh file="desk_scene_30.obj"/>
+    <mesh file="desk_scene_31.obj"/>
+    <mesh file="desk_scene_32.obj"/>
+    <mesh file="desk_scene_33.obj"/>
+    <mesh file="desk_scene_34.obj"/>
+    <mesh file="desk_scene_35.obj"/>
+    <mesh file="desk_scene_36.obj"/>
+    <mesh file="desk_scene_37.obj"/>
+    <mesh file="desk_scene_38.obj"/>
+    <mesh file="desk_scene_39.obj"/>
+    <mesh file="desk_scene_40.obj"/>
+    <mesh file="desk_scene_41.obj"/>
+    <mesh file="desk_scene_42.obj"/>
+    <mesh file="desk_scene_43.obj"/>
+    <mesh file="desk_scene_44.obj"/>
+    <mesh file="desk_scene_45.obj"/>
+    <mesh file="desk_scene_46.obj"/>
+    <mesh file="desk_scene_47.obj"/>
+    <mesh file="desk_scene_48.obj"/>
+    <mesh file="desk_scene_49.obj"/>
+    <mesh file="desk_scene_50.obj"/>
+    <mesh file="desk_scene_51.obj"/>
+    <mesh file="desk_scene_52.obj"/>
+    <mesh file="desk_scene_53.obj"/>
+    <mesh file="desk_scene_54.obj"/>
+    <mesh file="desk_scene_55.obj"/>
+    <mesh file="desk_scene_56.obj"/>
+    <mesh file="desk_scene_57.obj"/>
+    <mesh file="desk_scene_58.obj"/>
+    <mesh file="desk_scene_59.obj"/>
+    <mesh file="desk_scene_60.obj"/>
+    <mesh file="desk_scene_61.obj"/>
+    <mesh file="desk_scene_62.obj"/>
+    <mesh file="desk_scene_63.obj"/>
+    <mesh file="desk_scene_64.obj"/>
+    <mesh file="desk_scene_65.obj"/>
+    <mesh file="desk_scene_66.obj"/>
+    <mesh file="desk_scene_67.obj"/>
+    <mesh file="desk_scene_68.obj"/>
+    <mesh file="desk_scene_69.obj"/>
+  </asset>
+  <worldbody>
+    <body name="desk_scene">
+      <geom mesh="desk_scene_0" material="BB_023_039" class="visual"/>
+      <geom mesh="desk_scene_1" material="BB_023_040" class="visual"/>
+      <geom mesh="desk_scene_2" material="BB_023_038" class="visual"/>
+      <geom mesh="desk_scene_3" material="BB_023_067" class="visual"/>
+      <geom mesh="desk_scene_4" material="BB_023_066" class="visual"/>
+      <geom mesh="desk_scene_5" material="BB_023_059" class="visual"/>
+      <geom mesh="desk_scene_6" material="BB_023_058" class="visual"/>
+      <geom mesh="desk_scene_7" material="BB_023_060" class="visual"/>
+      <geom mesh="desk_scene_8" material="BB_023_036" class="visual"/>
+      <geom mesh="desk_scene_9" material="BB_023_035" class="visual"/>
+      <geom mesh="desk_scene_10" material="BB_023_034" class="visual"/>
+      <geom mesh="desk_scene_11" material="BB_023_033" class="visual"/>
+      <geom mesh="desk_scene_12" material="BB_023_032" class="visual"/>
+      <geom mesh="desk_scene_13" material="BB_023_031" class="visual"/>
+      <geom mesh="desk_scene_14" material="BB_023_030" class="visual"/>
+      <geom mesh="desk_scene_15" material="BB_023_029" class="visual"/>
+      <geom mesh="desk_scene_16" material="BB_023_027" class="visual"/>
+      <geom mesh="desk_scene_17" material="BB_023_026" class="visual"/>
+      <geom mesh="desk_scene_18" material="BB_023_025" class="visual"/>
+      <geom mesh="desk_scene_19" material="BB_023_016" class="visual"/>
+      <geom mesh="desk_scene_20" material="BB_023_006" class="visual"/>
+      <geom mesh="desk_scene_21" material="BB_023_064" class="visual"/>
+      <geom mesh="desk_scene_22" material="BB_023_065" class="visual"/>
+      <geom mesh="desk_scene_23" material="BB_023_063" class="visual"/>
+      <geom mesh="desk_scene_24" material="BB_023_062" class="visual"/>
+      <geom mesh="desk_scene_25" material="BB_023_061" class="visual"/>
+      <geom mesh="desk_scene_26" material="BB_023_020" class="visual"/>
+      <geom mesh="desk_scene_27" material="BB_023_018" class="visual"/>
+      <geom mesh="desk_scene_28" material="BB_023_017" class="visual"/>
+      <geom mesh="desk_scene_29" material="BB_023_015" class="visual"/>
+      <geom mesh="desk_scene_30" material="BB_023_013" class="visual"/>
+      <geom mesh="desk_scene_31" material="BB_023_014" class="visual"/>
+      <geom mesh="desk_scene_32" material="BB_023_012" class="visual"/>
+      <geom mesh="desk_scene_33" material="BB_023_010" class="visual"/>
+      <geom mesh="desk_scene_34" material="BB_023_009" class="visual"/>
+      <geom mesh="desk_scene_35" material="BB_023_008" class="visual"/>
+      <geom mesh="desk_scene_36" material="BB_023_005" class="visual"/>
+      <geom mesh="desk_scene_37" material="BB_023_004" class="visual"/>
+      <geom mesh="desk_scene_38" material="BB_023_003" class="visual"/>
+      <geom mesh="desk_scene_39" material="BB_023_002" class="visual"/>
+      <geom mesh="desk_scene_40" material="BB_023_052" class="visual"/>
+      <geom mesh="desk_scene_41" material="BB_023_037" class="visual"/>
+      <geom mesh="desk_scene_42" material="BB_023_051" class="visual"/>
+      <geom mesh="desk_scene_43" material="BB_023_050" class="visual"/>
+      <geom mesh="desk_scene_44" material="BB_023_049" class="visual"/>
+      <geom mesh="desk_scene_45" material="BB_023_048" class="visual"/>
+      <geom mesh="desk_scene_46" material="BB_023_042" class="visual"/>
+      <geom mesh="desk_scene_47" material="BB_023_047" class="visual"/>
+      <geom mesh="desk_scene_48" material="BB_023_007" class="visual"/>
+      <geom mesh="desk_scene_49" material="BB_023_019" class="visual"/>
+      <geom mesh="desk_scene_50" material="BB_023_028" class="visual"/>
+      <geom mesh="desk_scene_51" material="BB_023_044" class="visual"/>
+      <geom mesh="desk_scene_52" material="BB_023_043" class="visual"/>
+      <geom mesh="desk_scene_53" material="BB_023_023" class="visual"/>
+      <geom mesh="desk_scene_54" material="BB_023_057" class="visual"/>
+      <geom mesh="desk_scene_55" material="BB_023_056" class="visual"/>
+      <geom mesh="desk_scene_56" material="BB_023_055" class="visual"/>
+      <geom mesh="desk_scene_57" material="BB_023_024" class="visual"/>
+      <geom mesh="desk_scene_58" material="BB_023_022" class="visual"/>
+      <geom mesh="desk_scene_59" material="BB_023_021" class="visual"/>
+      <geom mesh="desk_scene_60" material="BB_023_001" class="visual"/>
+      <geom mesh="desk_scene_61" material="BB_023_046" class="visual"/>
+      <geom mesh="desk_scene_62" material="BB_023_070" class="visual"/>
+      <geom mesh="desk_scene_63" material="BB_023_069" class="visual"/>
+      <geom mesh="desk_scene_64" material="BB_023_068" class="visual"/>
+      <geom mesh="desk_scene_65" material="BB_023_011" class="visual"/>
+      <geom mesh="desk_scene_66" material="BB_023_054" class="visual"/>
+      <geom mesh="desk_scene_67" material="BB_023_053" class="visual"/>
+      <geom mesh="desk_scene_68" material="BB_023_045" class="visual"/>
+      <geom mesh="desk_scene_69" material="BB_023_041" class="visual"/>
+      <geom mesh="desk_scene_0" class="collision"/>
+      <geom mesh="desk_scene_1" class="collision"/>
+      <geom mesh="desk_scene_2" class="collision"/>
+      <geom mesh="desk_scene_3" class="collision"/>
+      <geom mesh="desk_scene_4" class="collision"/>
+      <geom mesh="desk_scene_5" class="collision"/>
+      <geom mesh="desk_scene_6" class="collision"/>
+      <geom mesh="desk_scene_7" class="collision"/>
+      <geom mesh="desk_scene_8" class="collision"/>
+      <geom mesh="desk_scene_9" class="collision"/>
+      <geom mesh="desk_scene_10" class="collision"/>
+      <geom mesh="desk_scene_11" class="collision"/>
+      <geom mesh="desk_scene_12" class="collision"/>
+      <geom mesh="desk_scene_13" class="collision"/>
+      <geom mesh="desk_scene_14" class="collision"/>
+      <geom mesh="desk_scene_15" class="collision"/>
+      <geom mesh="desk_scene_16" class="collision"/>
+      <geom mesh="desk_scene_17" class="collision"/>
+      <geom mesh="desk_scene_18" class="collision"/>
+      <geom mesh="desk_scene_19" class="collision"/>
+      <geom mesh="desk_scene_20" class="collision"/>
+      <geom mesh="desk_scene_21" class="collision"/>
+      <geom mesh="desk_scene_22" class="collision"/>
+      <geom mesh="desk_scene_23" class="collision"/>
+      <geom mesh="desk_scene_24" class="collision"/>
+      <geom mesh="desk_scene_25" class="collision"/>
+      <geom mesh="desk_scene_26" class="collision"/>
+      <geom mesh="desk_scene_27" class="collision"/>
+      <geom mesh="desk_scene_28" class="collision"/>
+      <geom mesh="desk_scene_29" class="collision"/>
+      <geom mesh="desk_scene_30" class="collision"/>
+      <geom mesh="desk_scene_31" class="collision"/>
+      <geom mesh="desk_scene_32" class="collision"/>
+      <geom mesh="desk_scene_33" class="collision"/>
+      <geom mesh="desk_scene_34" class="collision"/>
+      <geom mesh="desk_scene_35" class="collision"/>
+      <geom mesh="desk_scene_36" class="collision"/>
+      <geom mesh="desk_scene_37" class="collision"/>
+      <geom mesh="desk_scene_38" class="collision"/>
+      <geom mesh="desk_scene_39" class="collision"/>
+      <geom mesh="desk_scene_40" class="collision"/>
+      <geom mesh="desk_scene_41" class="collision"/>
+      <geom mesh="desk_scene_42" class="collision"/>
+      <geom mesh="desk_scene_43" class="collision"/>
+      <geom mesh="desk_scene_44" class="collision"/>
+      <geom mesh="desk_scene_45" class="collision"/>
+      <geom mesh="desk_scene_46" class="collision"/>
+      <geom mesh="desk_scene_47" class="collision"/>
+      <geom mesh="desk_scene_48" class="collision"/>
+      <geom mesh="desk_scene_49" class="collision"/>
+      <geom mesh="desk_scene_50" class="collision"/>
+      <geom mesh="desk_scene_51" class="collision"/>
+      <geom mesh="desk_scene_52" class="collision"/>
+      <geom mesh="desk_scene_53" class="collision"/>
+      <geom mesh="desk_scene_54" class="collision"/>
+      <geom mesh="desk_scene_55" class="collision"/>
+      <geom mesh="desk_scene_56" class="collision"/>
+      <geom mesh="desk_scene_57" class="collision"/>
+      <geom mesh="desk_scene_58" class="collision"/>
+      <geom mesh="desk_scene_59" class="collision"/>
+      <geom mesh="desk_scene_60" class="collision"/>
+      <geom mesh="desk_scene_61" class="collision"/>
+      <geom mesh="desk_scene_62" class="collision"/>
+      <geom mesh="desk_scene_63" class="collision"/>
+      <geom mesh="desk_scene_64" class="collision"/>
+      <geom mesh="desk_scene_65" class="collision"/>
+      <geom mesh="desk_scene_66" class="collision"/>
+      <geom mesh="desk_scene_67" class="collision"/>
+      <geom mesh="desk_scene_68" class="collision"/>
+      <geom mesh="desk_scene_69" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>
