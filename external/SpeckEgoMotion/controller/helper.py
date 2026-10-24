@@ -103,9 +103,11 @@ def plot_controller_response(salmax_arr, control_arr, target_tilt, target_pan, c
     axes[3, 0].plot(error_tilt * controller_gain - control_arr[:, 0], color='tab:purple')
     axes[3, 0].set_xlabel('window index')
     axes[3, 0].set_ylabel('error * kp - control')
+    axes[3, 0].set_ylim(y_min, y_max)
 
     axes[3, 1].plot(error_pan * controller_gain - control_arr[:, 1], color='tab:purple')
     axes[3, 1].set_xlabel('window index')
+    axes[3, 1].set_ylim(y_min, y_max)
 
     # --- Row 5: error - control ouput
     data_a = error_tilt - control_arr[:, 0]
