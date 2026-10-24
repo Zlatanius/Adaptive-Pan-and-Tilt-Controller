@@ -25,14 +25,11 @@ import cv2
 import math
 from loguru import logger
 
-# Vendored IEBCS source (see external/IEBCS_src, external/IEBCS_data)
-sys.path.append(os.path.join(os.path.dirname(__file__), "external", "IEBCS", "src"))
-sys.path.append(os.path.join(os.path.dirname(__file__), "external", "SpeckEgoMotion", "functions"))
-
-from dvs_sensor import DvsSensor  # noqa: E402
-
-from OMS_helpers import *
-from attention_simple_helpers import *
+from dvs_sensor import DvsSensor
+from functions.OMS_helpers import *
+from functions.attention_simple_helpers import *
+from controller.nengo_controller import NengoController
+from controller.helper import plot_controller_response
 
 # ---------------------------------------------------------------- settings
 XML_PATH = "pan_tilt.xml"
@@ -40,12 +37,12 @@ WIDTH, HEIGHT = 320, 240
 SIM_DT = 0.002          # physics timestep
 RENDER_HZ = 300         # frame render rate fed into the sensor
 SALIENCY_HZ = 30
-DURATION = 8.0          # seconds
+DURATION = 2.0          # seconds
 PAN_AMPLITUDE_DEG = 0.2
 TILT_AMPLITUDE_DEG = 0.2
 PAN_FREQ_HZ = 20
 TILT_FREQ_HZ = 20
-OUT_PATH = './out/saliency.mp4'
+OUT_PATH = './out'
 
 # IEBCS sensor parameters (values from the repo's own example)
 TH_POS = 0.2          # ON threshold (log change)
@@ -64,8 +61,6 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "external", "IEBCS", "data")
 # of the loaded .npy file (they only matched 128x128 by coincidence
 # when using the physical 128x128 Speck sensor).
 MAX_X, MAX_Y = WIDTH, HEIGHT
-
-# TODO: Change OMS_PARAMS and ATTENTION_PARAMS to be an object or sepparate params
 
 # OMS Parameters (unchanged from demo.py)
 OMS_PARAMS = {
@@ -96,6 +91,12 @@ ATTENTION_PARAMS = {
     'stride': 1,
     'out_ch': 1
 }
+
+# Helper function for padding frames
+def pad16(img):
+    h, w = img.shape[:2]
+    ph, pw = (-h) % 16, (-w) % 16
+    return np.pad(img, ((0, ph), (0, pw)) + ((0, 0),) * (img.ndim - 2))
 
 # ---------------------------------------------------------------- MuJoCo setup
 model = mujoco.MjModel.from_xml_path(XML_PATH)
@@ -167,8 +168,8 @@ def visualiser(window, OMS, saliency_map, salmax_coords, panel_size=200):
         return img[:, :, None].repeat(3, axis=2)
 
     combined[10:10 + h, 1:1 + w, :] = to_rgb(window)
-    combined[10:10 + h, w + 2:w + 2 + w, :] = to_rgb(saliency_map)
-    combined[10:10 + h, 2 * w + 3:2 * w + 3 + w, :] = to_rgb(OMS)
+    combined[10:10 + h, w + 2:w + 2 + w, :] = to_rgb(OMS)
+    combined[10:10 + h, 2 * w + 3:2 * w + 3 + w, :] = to_rgb(saliency_map)
 
     # salmax_coords are in saliency_map's original coordinate space --
     # rescale them into the resized panel before drawing
@@ -177,63 +178,64 @@ def visualiser(window, OMS, saliency_map, salmax_coords, panel_size=200):
     scaled_x = int(salmax_coords[1] * w / sal_w)
     cv2.circle(
         combined,
-        (w + 2 + scaled_x, 10 + scaled_y),
+        (2 * w + scaled_x, 10 + scaled_y),
         4, (0, 255, 0), -1
     )
 
     cv2.putText(combined, 'Events', (5, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
-    cv2.putText(combined, 'OMS', (2 * w + 8, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
-    cv2.putText(combined, 'Saliency', (w + 7, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
-    return combined
+    cv2.putText(combined, 'OMS', (w + 7, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
+    cv2.putText(combined, 'Saliency', (2 * w + 8, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
+    return pad16(combined)
 
-# ---------------------------------------------------------------- main loop
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+resolution = WIDTH, HEIGHT
+
 frames_preview = []
 event_frames = []  # per-frame accumulated event image, for a preview video
 all_events = []     # list of (t, x, y, p)
-
-# ----- OMS setup -----
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-# TODO: check if the order of WDITH and HEIGHT is correct
-resolution = WIDTH, HEIGHT
+sal_frames = []
 
 # Same model initialisation as demo.py
 net_center, net_surround = initialize_oms(device, OMS_PARAMS)
 net_attention = initialise_attention(device, ATTENTION_PARAMS)
 
-# TODO: replace size_krn_after_oms with a global variable
 size_krn_after_oms = OMS_PARAMS['size_krn_after_oms']
 saliency_map = np.zeros((size_krn_after_oms, size_krn_after_oms), dtype=np.float32)
 salmax_coords = np.zeros((2,), dtype=np.int32)
 
-# Video writer so results are inspectable without a live display.
-# panel_size must match the value used in visualiser() below.
+# Panel size for visualizer
 panel_size = 400
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-out_w = panel_size * 3 + 4
-out_h = panel_size + 20
-writer = cv2.VideoWriter(OUT_PATH, fourcc, SALIENCY_HZ, (out_w, out_h))
 
+# ------------------------------- Controller Setup -------------------------------
+kp = 3.1
+k_pan = np.array([kp, 0, 0])
+k_tilt = np.array([kp, 0, 0])
+target_coords = np.array([size_krn_after_oms // 2, size_krn_after_oms // 2])
+
+# print("Target coords: ", target_coords)
+
+controller = NengoController(target_tilt=target_coords[0], target_pan=target_coords[1], k_pan=k_pan, k_tilt=k_tilt)
+
+# ------------------------------- Diagnostics Varibles -------------------------------
 latency = []
 n_windows = 0
 control = []
 salmax = []
 
+# ---------------------------------------------------------------- main loop
 for i in range(n_frames):
     t = i * render_dt
 
-    # drive pan/tilt with a smooth trajectory
-    pan_deg = PAN_AMPLITUDE_DEG * np.sin(2 * np.pi * PAN_FREQ_HZ * t)
-    tilt_deg = -TILT_AMPLITUDE_DEG * np.sin(2 * np.pi * TILT_FREQ_HZ * t)
-    data.ctrl[pan_act] = np.deg2rad(pan_deg)
-    data.ctrl[tilt_act] = np.deg2rad(tilt_deg)
-
+    # Step the simulation
     for _ in range(steps_per_frame):
         mujoco.mj_step(model, data)
 
+    # Render the scene
     renderer.update_scene(data, camera="event_cam")
     rgb = renderer.render()
     frames_preview.append(rgb.copy())
 
+    # IEBCS rgb to events pipeline
     flux = to_flux(rgb)
 
     if i == 0:
@@ -254,11 +256,11 @@ for i in range(n_frames):
         ev_frame[yi, xi] = polarity
     event_frames.append(ev_frame)
 
-    frame_img_generater = False
+    # frame_img_generater = False
 
     # ----- OMS and Atention -----
-    if i % SALIENCY_HZ == 0:
-        n_frames_in_window = math.ceil(RENDER_HZ / SALIENCY_HZ)
+    if i % RENDER_HZ // SALIENCY_HZ == 0:
+        n_frames_in_window = RENDER_HZ // SALIENCY_HZ
 
         window_frame = np.sum(event_frames[-n_frames_in_window:], axis=0)
         window_frame = abs(window_frame)
@@ -296,7 +298,9 @@ for i in range(n_frames):
         salmax_coords[:] = sal_max
 
         frame = visualiser(window_frame, OMS_np, saliency_map, salmax_coords, panel_size=panel_size)
-        writer.write(frame)
+        # for _ in range(round(RENDER_HZ / SALIENCY_HZ)):
+        #     sal_frames.append(frame)
+        sal_frames.append(frame)
         n_windows += 1
 
         if n_windows % 20 == 0:
@@ -304,19 +308,25 @@ for i in range(n_frames):
 
 
     # ----- Control logging and plotting -----
-    #cmd = controller(np.array(salmax_coords))
-    #control.append(cmd)
-    #salmax.append(np.array(salmax_coords))
+    cmd = controller(np.array(salmax_coords))
+    control.append(cmd)
+    salmax.append(np.array(salmax_coords))
+
+    # ----- Drive pan/tilt with a smooth trajectory -----
+    pan_deg = PAN_AMPLITUDE_DEG * np.sin(2 * np.pi * PAN_FREQ_HZ * t)
+    tilt_deg = -TILT_AMPLITUDE_DEG * np.sin(2 * np.pi * TILT_FREQ_HZ * t)
+    data.ctrl[pan_act] = np.deg2rad(pan_deg)
+    data.ctrl[tilt_act] = np.deg2rad(tilt_deg)
+
 
     # ----- Latency logging -----
     #latency.append(time_module.time() - start)
     if i % 20 == 0:
         print(f"frame {i}/{n_frames}  t={t:.2f}s  events so far={len(all_events)}")
 
-writer.release()
 print(f"Total events generated: {len(all_events)}")
 
-# ---------------------------------------------------------------- save outputs
+# ------------------- Save Outputs -------------------
 os.makedirs("out", exist_ok=True)
 
 # 1. RGB preview video (what the camera actually saw)
@@ -331,7 +341,10 @@ for ev_frame in event_frames:
     event_vis.append(vis)
 imageio.mimsave("out/events_preview.mp4", event_vis, fps=RENDER_HZ)
 
-# 3. Raw event stream as a structured numpy array (t, x, y, polarity)
+# 3. Event map, OMS, Max Saliency
+imageio.mimsave(f'{OUT_PATH}/saliency.mp4', sal_frames, fps=SALIENCY_HZ)
+
+# 4. Raw event stream as a structured numpy array (t, x, y, polarity)
 events_arr = np.array(
     all_events,
     dtype=[("t", "f8"), ("x", "i4"), ("y", "i4"), ("p", "i1")],
@@ -340,3 +353,16 @@ np.save("out/events.npy", events_arr)
 
 print("Saved: out/rgb_preview.mp4, out/events_preview.mp4, "
       "out/accumulated_events.png, out/events.npy")
+
+# -------------- Plot Controller Outputs --------------
+
+print("Saliency Array:", np.array(salmax).shape)
+
+plot_controller_response(
+    salmax_arr=np.array(salmax), 
+    control_arr=np.array([c[:2] for c in control]), 
+    target_tilt=target_coords[0],
+    target_pan=target_coords[1],
+    controller_gain=kp,
+    out_path=OUT_PATH
+)
