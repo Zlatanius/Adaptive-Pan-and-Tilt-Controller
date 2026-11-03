@@ -38,11 +38,7 @@ WIDTH, HEIGHT = 320, 240
 SIM_DT = 0.002          # physics timestep
 RENDER_HZ = 300         # frame render rate fed into the sensor
 SALIENCY_HZ = 30
-DURATION = 2.0          # seconds
-PAN_AMPLITUDE_DEG = 0.2
-TILT_AMPLITUDE_DEG = 0.2
-PAN_FREQ_HZ = 20
-TILT_FREQ_HZ = 20
+DURATION = 4.0          # seconds
 OUT_PATH = './out'
 
 # IEBCS sensor parameters (values from the repo's own example)
@@ -70,7 +66,7 @@ OMS_PARAMS = {
     'size_krn_surround': 8,
     'size_krn_after_oms': 121,
     'sigma_surround': 4,
-    'threshold': 0.46,
+    'threshold': 0.6,
     'tau_memOMS': 0.3,
     'sc': 1,
     'ss': 1
@@ -92,6 +88,18 @@ ATTENTION_PARAMS = {
     'stride': 1,
     'out_ch': 1
 }
+
+# Controller and pan/tilt settings
+SIGN_TILT   = 1 # Positive tilt direction is down
+SIGN_PAN    = -1 # Positive pan direction is left
+FOVY = np.deg2rad(55) # matches fovy in pan_tilt.xml
+# saliency map spans the image height
+RAD_PER_PX_TILT = FOVY / OMS_PARAMS['size_krn_after_oms'] 
+# Approcximation of horizontal FOV
+RAD_PER_PX_PAN  = FOVY * (WIDTH / HEIGHT) / OMS_PARAMS['size_krn_after_oms'] 
+MICRO_FREQ_HZ = 10
+MICRO_AMP_DEG = 0.5
+MICRO_PHASE = np.pi / 2
 
 # ---------------------------------------------------------------- MuJoCo setup
 model = mujoco.MjModel.from_xml_path(XML_PATH)
@@ -151,10 +159,12 @@ salmax_coords = np.zeros((2,), dtype=np.int32)
 panel_size = 400
 
 # ------------------------------- Controller Setup -------------------------------
-kp = 3.1
+kp = 0.5
 k_pan = np.array([kp, 0, 0])
 k_tilt = np.array([kp, 0, 0])
 target_coords = np.array([size_krn_after_oms // 2, size_krn_after_oms // 2])
+pan_target = 0.0     # rad, integrated state
+tilt_target = 0.0
 
 # print("Target coords: ", target_coords)
 
@@ -188,22 +198,25 @@ for i in range(n_frames):
         event_frames.append(np.zeros((HEIGHT, WIDTH), dtype=np.float32))
         continue
 
-    ev = dvs.update(flux, frame_dt_us)  # <-- the live, per-frame call
-
-    xs, ys, ps = ev.get_x(), ev.get_y(), ev.get_p()
-    ts = ev.get_ts() * 1e-6  # us -> s
 
     ev_frame = np.zeros((HEIGHT, WIDTH), dtype=np.float32)
-    for xi, yi, pi, ti in zip(xs, ys, ps, ts):
-        polarity = 1 if pi else -1
-        all_events.append((float(ti), int(xi), int(yi), polarity))
-        ev_frame[yi, xi] = polarity
+    ev = dvs.update(flux, frame_dt_us)  # <-- the live, per-frame call
+
+    if ev:
+        xs, ys, ps = ev.get_x(), ev.get_y(), ev.get_p()
+        ts = ev.get_ts() * 1e-6  # us -> s
+
+        for xi, yi, pi, ti in zip(xs, ys, ps, ts):
+            polarity = 1 if pi else -1
+            all_events.append((float(ti), int(xi), int(yi), polarity))
+            ev_frame[yi, xi] = polarity
+
     event_frames.append(ev_frame)
 
     # frame_img_generater = False
 
     # ----- OMS and Atention -----
-    if i % RENDER_HZ // SALIENCY_HZ == 0:
+    if i % (RENDER_HZ // SALIENCY_HZ) == 0:
         n_frames_in_window = RENDER_HZ // SALIENCY_HZ
 
         window_frame = np.sum(event_frames[-n_frames_in_window:], axis=0)
@@ -250,18 +263,35 @@ for i in range(n_frames):
         if n_windows % 20 == 0:
             logger.info(f"Processed {n_windows} windows | last salmax: {tuple(salmax_coords)}")
 
-
-    # ----- Control logging and plotting -----
-    cmd = controller(np.array(salmax_coords))
-    control.append(cmd)
+    # Save salmax_coords on every sim frame
     salmax.append(np.array(salmax_coords))
 
-    # ----- Drive pan/tilt with a smooth trajectory -----
-    pan_deg = PAN_AMPLITUDE_DEG * np.sin(2 * np.pi * PAN_FREQ_HZ * t)
-    tilt_deg = -TILT_AMPLITUDE_DEG * np.sin(2 * np.pi * TILT_FREQ_HZ * t)
-    data.ctrl[pan_act] = np.deg2rad(pan_deg)
-    data.ctrl[tilt_act] = np.deg2rad(tilt_deg)
+    # -------------------- Control and pan and tilt drive --------------------
+    cmd = controller(np.array(salmax_coords))
+    control.append(cmd)
 
+    # Microsaccades
+    wt = 2 * np.pi * MICRO_FREQ_HZ * t
+    micro_pan  = np.deg2rad(MICRO_AMP_DEG) * np.cos(wt)
+    micro_tilt = np.deg2rad(MICRO_AMP_DEG) * np.sin(wt + MICRO_PHASE)
+
+    # Control
+    ctrl_tilt = SIGN_TILT * cmd[0] * RAD_PER_PX_TILT
+    ctrl_pan  = SIGN_PAN  * cmd[1] * RAD_PER_PX_PAN
+
+    pan_target  = micro_pan
+    tilt_target = micro_tilt
+
+    if i % 50 == 0:
+    # if False:
+        pan_target  += ctrl_pan
+        tilt_target += ctrl_tilt
+
+    # if i == 200:
+    #     data.ctrl[pan_act] += np.pi / 6
+
+    data.ctrl[pan_act]  = np.clip(data.ctrl[pan_act] + pan_target,  np.deg2rad(-65), np.deg2rad(65))
+    data.ctrl[tilt_act] = np.clip(data.ctrl[tilt_act] + tilt_target, np.deg2rad(-25), np.deg2rad(25))
 
     # ----- Latency logging -----
     #latency.append(time_module.time() - start)
