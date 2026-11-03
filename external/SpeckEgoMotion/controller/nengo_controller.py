@@ -29,10 +29,10 @@ class NengoController:
         target_pan=64,
         target_tilt=64,
         depth=0.0,
-        simulator_dt=0.1,
-        n_neurons=50,
-        ensemble_radius=150,
-        probe_tau = 0.001, # seconds, maybe should be smaller
+        simulator_dt=0.001,
+        n_neurons=100,
+        ensemble_radius=50,
+        probe_tau = 0.01,
     ):
         self.k_pan = k_pan
         self.k_tilt = k_tilt
