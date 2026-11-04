@@ -79,11 +79,11 @@ frames_preview = []
 kp = 0.5
 k_pan = np.array([kp, 0, 0])
 k_tilt = np.array([kp, 0, 0])
-target_coords = np.array([FRAME_SIZE // 2, FRAME_SIZE // 2])
-pan_target = 0.0     # rad, integrated state
-tilt_target = 0.0
+center_coords = np.array([FRAME_SIZE // 2, FRAME_SIZE // 2])
+pan_cmd = 0.0     # rad, integrated state
+tilt_cmd = 0.0
 
-controller = NengoController(target_tilt=target_coords[0], target_pan=target_coords[1], k_pan=k_pan, k_tilt=k_tilt)
+controller = NengoController(target_tilt=center_coords[0], target_pan=center_coords[1], k_pan=k_pan, k_tilt=k_tilt)
 
 # ------------------------------- Diagnostics Varibles -------------------------------
 latency = []
@@ -92,7 +92,7 @@ control = []
 measured_positions = []
 
 # ---------------------------------------------------------------- main loop
-for i in tqdm(range(n_frames)):
+for i in tqdm(range(n_frames), unit="frames", ncols=100):
     t = i * render_dt
 
     # Step the simulation
@@ -105,7 +105,7 @@ for i in tqdm(range(n_frames)):
     frames_preview.append(rgb.copy())
 
     # -------------------- Control and pan and tilt drive --------------------
-    cmd = controller(target_coords)
+    cmd = controller(center_coords)
     control.append(cmd)
 
     # Microsaccades
@@ -117,21 +117,21 @@ for i in tqdm(range(n_frames)):
     ctrl_tilt = SIGN_TILT * cmd[0] * RAD_PER_PX_TILT
     ctrl_pan  = SIGN_PAN  * cmd[1] * RAD_PER_PX_PAN
 
-    pan_target  = micro_pan * USE_MICRO_SACC
-    tilt_target = micro_tilt * USE_MICRO_SACC
+    pan_cmd  = micro_pan * USE_MICRO_SACC
+    tilt_cmd = micro_tilt * USE_MICRO_SACC
 
     if i % RENDER_HZ // CONTROL_HZ == 0:
     # if False:
-        pan_target  += ctrl_pan
-        tilt_target += ctrl_tilt
+        pan_cmd  += ctrl_pan
+        tilt_cmd += ctrl_tilt
 
     # if i == 200:
     #     data.ctrl[pan_act] += np.pi / 6
 
-    data.ctrl[pan_act]  = np.clip(data.ctrl[pan_act] + pan_target,  np.deg2rad(-65), np.deg2rad(65))
-    data.ctrl[tilt_act] = np.clip(data.ctrl[tilt_act] + tilt_target, np.deg2rad(-25), np.deg2rad(25))
+    data.ctrl[pan_act]  = np.clip(data.ctrl[pan_act] + pan_cmd,  np.deg2rad(-65), np.deg2rad(65))
+    data.ctrl[tilt_act] = np.clip(data.ctrl[tilt_act] + tilt_cmd, np.deg2rad(-25), np.deg2rad(25))
 
-    measured_positions.append(target_coords)
+    measured_positions.append(center_coords)
 
 # ------------------- Save Outputs -------------------
 os.makedirs("out", exist_ok=True)
@@ -147,8 +147,8 @@ print("Saved: out/rgb_preview.mp4, out/events_preview.mp4, "
 plot_controller_response(
     measured_arr=np.array(measured_positions), 
     control_arr=np.array([c[:2] for c in control]), 
-    target_tilt=target_coords[0],
-    target_pan=target_coords[1],
+    target_tilt=center_coords[0],
+    target_pan=center_coords[1],
     controller_gain=kp,
     out_path=OUT_PATH
 )
