@@ -1,8 +1,8 @@
 """
 Nengo-based PID-style controller for a pan-tilt unit (PTU).
 
-Sign convention: positive pan/tilt error corresponds to coordinates
-that are to the left of, and above, the centre of the frame.
+Sign convention: the error on each axis is (measured - target), so a
+positive error means the measured coordinate is greater than the target.
 """
 
 import nengo
@@ -19,7 +19,7 @@ class NengoController:
         k * (current_position - target_position)
 
     for both the pan and tilt axes in separate neural ensembles, and
-    reads the (negated) decoded value back out as the control signal.
+    reads the decoded value back out as the control signal.
     """
 
     def __init__(
@@ -28,21 +28,23 @@ class NengoController:
         k_tilt=np.array([1.0, 0.0, 0.0]),
         target_pan=64,
         target_tilt=64,
-        depth=0.0,
         simulator_dt=0.001,
         n_neurons=100,
         ensemble_radius=50,
-        probe_tau = 0.01,
+        probe_tau = 0.001,
+        sim_run_time=0.5,
+        avg_window=20
     ):
         self.k_pan = k_pan
         self.k_tilt = k_tilt
         self.target_pan = target_pan
         self.target_tilt = target_tilt
-        self.depth = depth
         self.simulator_dt = simulator_dt
         self.n_neurons = n_neurons
         self.ensemble_radius = ensemble_radius
         self.probe_tau = probe_tau
+        self.sim_run_time = sim_run_time
+        self.avg_window = avg_window
 
         # Initialize the current pan/tilt to the target so the
         # controller doesn't produce a large swing the moment it
@@ -87,47 +89,47 @@ class NengoController:
 
             self.p_pan = nengo.Probe(
                 pan_err_prop,
-                synapse=self.probe_tau
+                # synapse=self.probe_tau
             )
             self.p_tilt = nengo.Probe(
                 tilt_err_prop,
-                synapse=self.probe_tau
+                # synapse=self.probe_tau
             )
 
         self.sim = nengo.Simulator(self.model, dt=self.simulator_dt)
 
-    def __call__(self, salmax_coords, sim_run_time=0.5, avg_window=100):
+    def __call__(self, measured_coords):
         """
-        Run the controller forward given the latest saliency-max
-        coordinates and return the (tilt, pan) control signal.
+        Run the controller forward given the latest measured
+        coordinates and return the control signal.
 
         Parameters
         ----------
-        salmax_coords : sequence of float
-            (tilt, pan) coordinates of the saliency maximum.
-        sim_run_time : float
-            Simulation time to advance, in seconds.
-        avg_window : int
-            Number of trailing probe samples to average over.
+        measured_coords : sequence of float
+            (tilt, pan) coordinates of the measured position.
 
         Returns
         -------
-        (data_tilt, data_pan) : tuple of float
+        (data_tilt, data_pan, full_data_pan, full_data_tilt) : tuple
+            data_tilt, data_pan : float
+                Averaged control signal for each axis.
+            full_data_pan, full_data_tilt : ndarray
+                All probe samples from this run, per axis.
         """
-        self.tilt, self.pan = salmax_coords[0], salmax_coords[1]
+        self.tilt, self.pan = measured_coords[0], measured_coords[1]
 
         # self.sim.reset()
-        self.sim.run(sim_run_time, progress_bar=False)
+        self.sim.run(self.sim_run_time, progress_bar=False)
 
         # Average the last `avg_window` samples of probe data.
-        # Note: by default the Nengo simulator uses a 1 ms time step,
-        # so probe data is indexed in milliseconds.
+        # Each sample is one simulator step of `simulator_dt` seconds
+        # (1 ms by default).
         # TODO: determine the optimal averaging window size.
         full_data_pan = self.sim.data[self.p_pan]
         full_data_tilt = self.sim.data[self.p_tilt]
 
-        data_tilt = np.mean(self.sim.data[self.p_tilt][-avg_window:])
-        data_pan = np.mean(self.sim.data[self.p_pan][-avg_window:])
+        data_tilt = np.mean(self.sim.data[self.p_tilt][-self.avg_window:])
+        data_pan = np.mean(self.sim.data[self.p_pan][-self.avg_window:])
 
         self.sim.clear_probes()
         return data_tilt, data_pan, full_data_pan, full_data_tilt
