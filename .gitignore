@@ -7,4 +7,6 @@ out/*
 MUJOCO_LOG.TXT
 __pycache__/
 *.pyc
-tmp/*
+
+/tmp/
+/out/
