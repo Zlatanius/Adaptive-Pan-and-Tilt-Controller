@@ -98,7 +98,7 @@ class NengoController:
 
         self.sim = nengo.Simulator(self.model, dt=self.simulator_dt)
 
-    def __call__(self, measured_coords):
+    def __call__(self, measured_coords) -> (float, float, np.ndarray, np.ndarray):
         """
         Run the controller forward given the latest measured
         coordinates and return the control signal.
