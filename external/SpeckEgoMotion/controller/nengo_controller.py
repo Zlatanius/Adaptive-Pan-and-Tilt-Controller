@@ -30,10 +30,10 @@ class NengoController:
         target_tilt=64,
         simulator_dt=0.001,
         n_neurons=100,
-        ensemble_radius=50,
-        probe_tau = 0.001,
+        ensemble_radius=500,
+        probe_tau = 0.01,
         sim_run_time=0.5,
-        avg_window=20
+        avg_window=50
     ):
         self.k_pan = k_pan
         self.k_tilt = k_tilt
@@ -106,7 +106,7 @@ class NengoController:
         Parameters
         ----------
         measured_coords : sequence of float
-            (tilt, pan) coordinates of the measured position.
+            (pan, tilt) coordinates of the measured position.
 
         Returns
         -------
@@ -116,7 +116,7 @@ class NengoController:
             full_data_pan, full_data_tilt : ndarray
                 All probe samples from this run, per axis.
         """
-        self.tilt, self.pan = measured_coords[0], measured_coords[1]
+        self.pan, self.tilt = measured_coords[0], measured_coords[1]
 
         # self.sim.reset()
         self.sim.run(self.sim_run_time, progress_bar=False)
@@ -132,4 +132,4 @@ class NengoController:
         data_pan = np.mean(self.sim.data[self.p_pan][-self.avg_window:])
 
         self.sim.clear_probes()
-        return data_tilt, data_pan, full_data_pan, full_data_tilt
+        return data_pan, data_tilt, full_data_pan, full_data_tilt

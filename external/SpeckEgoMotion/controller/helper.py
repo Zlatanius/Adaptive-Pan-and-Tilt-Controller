@@ -47,13 +47,13 @@ def plot_controller_response(measured_arr, control_arr, target_tilt, target_pan,
     axes[0, 0].set_ylim(y_min, y_max)
     axes[0, 0].set_ylabel('position')
     axes[0, 0].set_title('Tilt axis')
-    axes[0, 0].legend()
+    # axes[0, 0].legend()
 
     axes[0, 1].plot(measured_arr[:, 1], label='measured_pan', color='tab:orange')
     axes[0, 1].axhline(target_pan, color='gray', linestyle='--', label='target')
     axes[0, 1].set_ylim(y_min, y_max)
     axes[0, 1].set_title('Pan axis')
-    axes[0, 1].legend()
+    # axes[0, 1].legend()
 
     # --- Row 2: error (measured - target) ---
     y_min = min(error_tilt.min(), error_pan.min())
