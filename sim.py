@@ -117,16 +117,17 @@ class PanTiltSim:
         return float(u), float(v)
 
     def get_target_pos_px(self, target: int):
-        if not (0 < target < self._num_of_targets - 1):
+        if not (0 <= target <= self._num_of_targets - 1):
+            print("Target index out of range.")
             return None
 
         return self.target_pos_px[target]
 
     def set_pan_cmd(self, cmd: float):
-        self.data.ctrl[self.pan_act]  = np.clip(self.data.ctrl[self.pan_act] + cmd,  np.deg2rad(-65), np.deg2rad(65))
+        self.data.ctrl[self.pan_act]  = np.clip(self.data.ctrl[self.pan_act] + cmd * self.sign_pan,  np.deg2rad(-65), np.deg2rad(65))
 
     def set_tilt_cmd(self, cmd: float):
-        self.data.ctrl[self.tilt_act] = np.clip(self.data.ctrl[self.tilt_act] + cmd, np.deg2rad(-25), np.deg2rad(25))
+        self.data.ctrl[self.tilt_act] = np.clip(self.data.ctrl[self.tilt_act] + cmd * self.sign_tilt, np.deg2rad(-25), np.deg2rad(25))
 
     def set_cmd(self, cmd: list[float]):
         self.set_pan_cmd(cmd[0])
@@ -138,10 +139,10 @@ class PanTiltSim:
 
         self.target_positions = self.read_target_pos(3)
         cam_pose = self.get_camera_pose()
-        target_pos_px = [self.world_to_pixel(target_pos=p, cam_pose=cam_pose) for p in self.target_positions]
+        self.target_pos_px = [self.world_to_pixel(target_pos=p, cam_pose=cam_pose) for p in self.target_positions]
 
         if self.mark_targets:
-            for u, v in (p for p in target_pos_px if p is not None):
+            for u, v in (p for p in self.target_pos_px if p is not None):
                 cv2.circle(frame, (round(u), round(v)), radius=5, color=(0, 255, 255))
 
         self.output_buffer.append(frame)

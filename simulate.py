@@ -94,7 +94,8 @@ for i in tqdm(range(n_frames), ncols=100, delay=1):
 
 # ------------------- Debug -------------------
     # if i == 0:
-    #     print(target_pos_px[0])
+    #     print("Target: ", target)
+    #     print("Target from sim: ", sim.get_target_pos_px(0))
 
 # ------------------- Save Outputs -------------------
 os.makedirs("out", exist_ok=True)
@@ -110,8 +111,8 @@ print("Saved: out/rgb_preview.mp4, out/events_preview.mp4, "
 plot_controller_response(
     measured_arr=np.array(measured_positions), 
     control_arr=np.array([c[:2] for c in control]), 
-    target_tilt=center_coords[0],
-    target_pan=center_coords[1],
+    target_pan=center_coords[0],
+    target_tilt=center_coords[1],
     controller_gain=kp,
     out_path="./out"
 )
