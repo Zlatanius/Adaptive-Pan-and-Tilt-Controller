@@ -1,40 +1,16 @@
-"""
-Minimum viable event-camera-on-a-pan-tilt simulation using MuJoCo + IEBCS.
-
-Pipeline:
-  1. Drive a 2-DOF pan-tilt rig on a sinusoidal trajectory.
-  2. Render RGB frames from the mounted camera at a fixed rate.
-  3. Feed each frame into IEBCS's DvsSensor.update(frame, dt), one frame
-     at a time -- a real per-pixel sensor model (latency, jitter,
-     refractory period, threshold mismatch, measured sensor noise),
-     called live in the same loop as the MuJoCo render, rather than a
-     batch conversion of a pre-recorded video.
-  4. Save: an RGB preview video, an accumulated event image, and the
-     raw event stream as a .npy structured array (t, x, y, p).
-
-Run:
-    MUJOCO_GL=osmesa python3 simulate.py       # Linux headless
-    python3 simulate.py                         # macOS / has a display
-"""
 import os
-import sys
-from matplotlib.pyplot import flag
 import numpy as np
-import mujoco
-import imageio
-import cv2
-import math
 import torch
 from tqdm import tqdm
-from loguru import logger
-from typing import NamedTuple
+from dataclasses import dataclass
 
 from controller.nengo_controller import NengoController
 from controller.helper import plot_controller_response
 from sim import PanTiltSim
+from models.config import SimulatorConfig
 
 # ------------------------------- Sim Setup ------------------------------
-sim = PanTiltSim(
+sim_config = SimulatorConfig(
     xml_path="pan_tilt.xml",
     out_path="./out",
     width=320,
@@ -49,6 +25,7 @@ sim = PanTiltSim(
     mark_targets=True
 )
 
+sim = PanTiltSim(sim_config)
 
 
 n_frames = int(sim.duration * sim.render_hz)
@@ -68,7 +45,7 @@ controller = NengoController(target_tilt=center_coords[0], target_pan=center_coo
 control = []
 measured_positions = []
 
-# ---------------------------------------------------------------- main loop
+# -------------------------------- Main Loop --------------------------------
 # Progress bar delayed by 1 it so that I can print debug in first it
 for i in tqdm(range(n_frames), ncols=100, delay=1):
 
@@ -79,7 +56,7 @@ for i in tqdm(range(n_frames), ncols=100, delay=1):
     # Render the scene
     sim.render()
 
-    # -------------------- Control and pan and tilt drive --------------------
+    # -------------------- Control and Pan and Tilt Drive --------------------
     target = sim.get_target_pos_px(0)
 
     if target == None:
@@ -103,8 +80,7 @@ os.makedirs("out", exist_ok=True)
 # 1. RGB preview video (what the camera actually saw)
 sim.save_rgb()
 
-print("Saved: out/rgb_preview.mp4, out/events_preview.mp4, "
-      "out/accumulated_events.png, out/events.npy")
+print("Saved: out/rgb_preview.mp4")
 
 # -------------- Plot Controller Outputs --------------
 

@@ -5,6 +5,8 @@ from typing import NamedTuple
 
 import mujoco
 
+from models.config import SimulatorConfig
+
 class CameraPose(NamedTuple):
     position: np.ndarray
     orientation: np.ndarray
@@ -12,76 +14,65 @@ class CameraPose(NamedTuple):
 class PanTiltSim:
     def __init__(
         self,
-        xml_path: str = "pan_tilt.xml",
-        out_path: str = "./out",
-        width: int = 320,
-        height: int = 320,
-        sim_dt: float = 0.002,          # physics timestep
-        render_hz: int = 300,           # frame render rate fed into the sensor
-        control_hz: int = 30,
-        duration: float = 4.0,          # seconds
-        cam_name: str = "event_cam",
-        sign_pan: int = 1,             # positive pan direction is left
-        sign_tilt: int = 1,             # positive tilt direction is down
-        use_micro_sacc: bool = False,
-        micro_freq_hz: float = 10.0,
-        micro_amp_deg: float = 0.5,
-        micro_phase: float = np.pi / 2,
-        mark_targets: bool = False
+        config: SimulatorConfig
     ):
         # Paths and timing
-        self.xml_path = xml_path
-        self.out_path = out_path
-        self.sim_dt = sim_dt
-        self.render_hz = render_hz
-        self.control_hz = control_hz
-        self.duration = duration
-        self.current_step = 0
-        self.current_time = 0
+        self.xml_path       = config.xml_path
+        self.out_path       = config.out_path
+        self.sim_dt         = config.sim_dt
+        self.render_hz      = config.render_hz
+        self.control_hz     = config.control_hz
+        self.duration       = config.duration
+        self.current_step   = 0
+        self.current_time   = 0
 
         # Image
-        self.width = width
-        self.height = height
-        self.max_x, self.max_y = width, height  # can be overridden later to match the .npy resolution
+        self.width  = config.width
+        self.height = config.height
+        self.max_x  = config.width
+        self.max_y  = config.height  # can be overridden later to match the .npy resolution
 
         # MuJoCo
-        self.model = mujoco.MjModel.from_xml_path(xml_path)
-        self.model.opt.timestep = sim_dt
-        self.data = mujoco.MjData(self.model)
-        self.renderer = mujoco.Renderer(self.model, height=height, width=width)
-        self.render_dt = 1 / render_hz
-        self.cam_name = cam_name
-        self.cam_id = self.model.camera(cam_name).id
-        self.pan_act = self.model.actuator("pan_act").id
-        self.tilt_act = self.model.actuator("tilt_act").id
+        self.model              = mujoco.MjModel.from_xml_path(config.xml_path)
+        self.model.opt.timestep = config.sim_dt
+        self.data               = mujoco.MjData(self.model)
+        self.renderer           = mujoco.Renderer(self.model,
+                                                  height=config.height,
+                                                  width=config.width)
+        self.render_dt  = 1 / config.render_hz
+        self.cam_name   = config.cam_name
+        self.cam_id     = self.model.camera(config.cam_name).id
+        self.pan_act    = self.model.actuator("pan_act").id
+        self.tilt_act   = self.model.actuator("tilt_act").id
 
         # Camera intrinsics, read from the model so they match the XML
         self.fovy = np.deg2rad(self.model.cam_fovy[self.cam_id])
-        self.fovx = 2 * np.arctan(np.tan(self.fovy / 2) * width / height)
-        self.f_px = (height / 2) / np.tan(self.fovy / 2)  # focal length in pixels
-        self.rad_per_px_tilt = self.fovy / height
-        self.rad_per_px_pan = self.fovx / width
+        self.fovx = 2 * np.arctan(np.tan(self.fovy / 2) * config.width / config.height)
+        self.f_px = (config.height / 2) / np.tan(self.fovy / 2) # focal length in pixels
+
+        self.rad_per_px_tilt    = self.fovy / config.height
+        self.rad_per_px_pan     = self.fovx / config.width
 
         # Controller
-        self.sign_tilt = sign_tilt
-        self.sign_pan = sign_pan
+        self.sign_tilt  = config.sign_tilt
+        self.sign_pan   = config.sign_pan
 
         # Microsaccades
-        self.use_micro_sacc = use_micro_sacc
-        self.micro_freq_hz = micro_freq_hz
-        self.micro_amp = np.deg2rad(micro_amp_deg)
-        self.micro_phase = micro_phase
+        self.use_micro_sacc = config.use_micro_sacc
+        self.micro_freq_hz  = config.micro_freq_hz
+        self.micro_amp      = np.deg2rad(config.micro_amp_deg)
+        self.micro_phase    = config.micro_phase
 
         # Derived step counts
-        self.steps_per_render = round(1 / (render_hz * sim_dt))
-        self.renders_per_control = render_hz // control_hz
-        self.n_steps = round(duration / sim_dt)
+        self.steps_per_render       = round(1 / (config.render_hz * config.sim_dt))
+        self.renders_per_control    = config.render_hz // config.control_hz
+        self.n_steps                = round(config.duration / config.sim_dt)
 
         # Targets
-        self._num_of_targets = 3
-        self.mark_targets = mark_targets
-        self.target_positions = [None, None, None]
-        self.target_pos_px = [None, None, None]
+        self._num_of_targets    = 3
+        self.mark_targets       = config.mark_targets
+        self.target_positions   = [None, None, None]
+        self.target_pos_px      = [None, None, None]
 
         # Output
         self.output_buffer = []
