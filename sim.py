@@ -30,8 +30,7 @@ class PanTiltSim:
         self.width  = config.width
         self.height = config.height
         self.max_x  = config.width
-        self.max_y  = config.height  # can be overridden later to match the .npy resolution
-
+        self.max_y  = config.height
         # MuJoCo
         self.model              = mujoco.MjModel.from_xml_path(config.xml_path)
         self.model.opt.timestep = config.sim_dt
@@ -69,21 +68,43 @@ class PanTiltSim:
         self.n_steps                = round(config.duration / config.sim_dt)
 
         # Targets
+        target_names            = PanTiltSim._get_children(self.model, "targets")
+        self.target_names       = target_names
         self._num_of_targets    = 3
         self.mark_targets       = config.mark_targets
-        self.target_positions   = [None, None, None]
-        self.target_pos_px      = [None, None, None]
+        self.target_positions   = dict.fromkeys(target_names)
+        self.target_pos_px      = dict.fromkeys(target_names)
 
         # Output
         self.output_buffer = []
+
+    @staticmethod
+    def _get_children(model: mujoco.MjModel, parent_name: str) -> list[str]:
+        pid = model.body(parent_name).id
+
+        bodies = [model.body(i).name for i in range(model.nbody)
+                  if model.body_parentid[i] == pid and i != pid]
+        geoms = [model.geom(i).name for i in range(model.ngeom)
+                 if model.geom_bodyid[i] == pid]
+        sites = [model.site(i).name for i in range(model.nsite)
+                 if model.site_bodyid[i] == pid]
+
+        return [n for n in bodies + geoms + sites if n]
+
+    def _validate_targets(self, target_names: list[str]) -> bool:
+        return set(target_names) <= set(self.target_names)
+
 
     def step(self):
         mujoco.mj_step(self.model, self.data)
         self.current_step += 1
         self.current_time += self.sim_dt
 
-    def read_target_pos(self, num_of_targets: int=3) -> list[np.ndarray]:
-        return [self.data.geom(f'target{t + 1}').xpos.copy() for t in range(num_of_targets)]
+    def read_target_pos(self, target_names: list[str]) -> dict[str, np.ndarray]:
+        if not self._validate_targets(target_names):
+            raise ValueError("Target not in list of targets")
+
+        return {t: self.data.geom(t).xpos.copy() for t in target_names}
 
     def get_camera_pose(self) -> CameraPose:
         cam_id = self.model.camera(self.cam_name).id
@@ -107,11 +128,7 @@ class PanTiltSim:
 
         return float(u), float(v)
 
-    def get_target_pos_px(self, target: int):
-        if not (0 <= target <= self._num_of_targets - 1):
-            print("Target index out of range.")
-            return None
-
+    def get_target_pos_px(self, target: str):
         return self.target_pos_px[target]
 
     def set_pan_cmd(self, cmd: float):
@@ -128,12 +145,15 @@ class PanTiltSim:
         self.renderer.update_scene(self.data, camera=self.cam_name)
         frame = self.renderer.render()
 
-        self.target_positions = self.read_target_pos(3)
+        self.target_positions = self.read_target_pos(self.target_names)
         cam_pose = self.get_camera_pose()
-        self.target_pos_px = [self.world_to_pixel(target_pos=p, cam_pose=cam_pose) for p in self.target_positions]
+        self.target_pos_px = {
+            name: self.world_to_pixel(target_pos=pos, cam_pose=cam_pose)
+            for name, pos in self.target_positions.items()
+        }
 
         if self.mark_targets:
-            for u, v in (p for p in self.target_pos_px if p is not None):
+            for u, v in {px for px in self.target_pos_px.values() if px is not None}:
                 cv2.circle(frame, (round(u), round(v)), radius=5, color=(0, 255, 255))
 
         self.output_buffer.append(frame)

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from controller.nengo_controller import NengoController
 from controller.helper import plot_controller_response
+from schedule import ScheduleSlot, TargetSchedule
 from sim import PanTiltSim
 from models.config import SimulatorConfig
 
@@ -18,7 +19,7 @@ sim_config = SimulatorConfig(
     sim_dt=0.002,
     render_hz=300,
     control_hz=30,
-    duration=4.0,
+    duration=3.0,
     cam_name="event_cam",
     sign_pan=-1,
     sign_tilt=1,
@@ -29,7 +30,25 @@ sim = PanTiltSim(sim_config)
 
 
 n_frames = int(sim.duration * sim.render_hz)
+frame_dt = sim_config.duration / n_frames
 steps_per_frame = max(1, int(round(sim.render_dt / sim.sim_dt)))
+
+# ------------------------------- Target Scheduling -------------------------------
+target_slots = [ScheduleSlot(target_name="target1",
+                             start_time=0.0,
+                             end_time=1.0),
+                ScheduleSlot(target_name="target2",
+                             start_time=1.0,
+                             end_time=2.0),
+                ScheduleSlot(target_name="target3",
+                            start_time=2.0,
+                            end_time=3.0)]
+
+target_schedule = TargetSchedule(target_slots,
+                                 dt=sim_config.sim_dt,
+                                 duration=sim_config.duration)
+
+schedule = target_schedule.schedule
 
 # ------------------------------- Controller Setup -------------------------------
 kp = 0.5
@@ -57,7 +76,10 @@ for i in tqdm(range(n_frames), ncols=100, delay=1):
     sim.render()
 
     # -------------------- Control and Pan and Tilt Drive --------------------
-    target = sim.get_target_pos_px(0)
+    t = i * frame_dt                       # current time in seconds
+    step = min(round(t / sim_config.sim_dt), len(schedule) - 1)
+    current_target = sim.get_target_pos_px(schedule[step])
+    target = current_target
 
     if target == None:
         target = center_coords
